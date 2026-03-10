@@ -13,8 +13,10 @@ from homeassistant.const import (
     CONF_USERNAME, CONF_PASSWORD)
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.issue_registry import IssueSeverity, async_create_issue, async_delete_issue
 from homeassistant.loader import async_get_integration
 from aio_panasonic_comfort_cloud import ApiClient
+from aio_panasonic_comfort_cloud.exceptions import ResponseError
 from aioaquarea import Client as AquareaApiClient, AquareaEnvironment
 from aioaquarea.errors import AuthenticationError
 
@@ -84,7 +86,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     
     client = async_get_clientsession(hass)
     api = ApiClient(username, password, client)
-    await api.start_session()
+    try:
+        await api.start_session()
+    except ResponseError as ex:
+        if "4103" in str(ex):
+            async_create_issue(
+                hass,
+                DOMAIN,
+                "terms_and_conditions_updated",
+                is_fixable=False,
+                severity=IssueSeverity.ERROR,
+                translation_key="terms_and_conditions_updated",
+            )
+            raise
+        raise
+    async_delete_issue(hass, DOMAIN, "terms_and_conditions_updated")
     devices = api.get_devices()
     
     if CONF_UPDATE_INTERVAL_VERSION not in conf or conf[CONF_UPDATE_INTERVAL_VERSION] < 2:

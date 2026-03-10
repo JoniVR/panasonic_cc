@@ -1,4 +1,10 @@
 {
+  "issues": {
+    "terms_and_conditions_updated": {
+      "title": "Panasonic terms and conditions updated",
+      "description": "Panasonic has updated their Terms and/or Policies. You must accept them before the integration can connect.\n\n1. Open the **Panasonic Comfort Cloud** app on your phone\n2. Log in with your account\n3. Accept the updated Terms and Conditions\n4. Restart Home Assistant or reload the integration"
+    }
+  },
   "config": {
     "step": {
       "user": {
